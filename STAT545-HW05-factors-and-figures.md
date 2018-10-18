@@ -547,7 +547,7 @@ ggplotly_Am_Euro <- ggplotly(Am_Euro_gap_ggplot2) # ggplotly Am_Euro_gap_ggplot2
 htmlwidgets::saveWidget(ggplotly_Am_Euro, file = "ggplotly_Am_Euro.html")
 ```
 
-The actual plotly plot is may be interacted with [here](https://raw.githack.com/STAT545-UBC-students/hw05-rachlobay/master/ggplotly_Am_Euro.html)!.
+The actual plotly plot is may be interacted with [here](https://raw.githack.com/STAT545-UBC-students/hw05-rachlobay/master/ggplotly_Am_Euro.html).
 
 The result looks like art. It is cool that if we hover over the plot produced by plotly, we can see the important information - what the population, GDP per capita, mean GDP per capita, and what country that the spot that we are hovering over pertains to. However, there are some drawbacks to using ggplotly. For example, when I tried to animate the above ggplotly, it became very difficult very quick because the following `animation_button(x = 1, xanchor = "right", y = 0, yanchor = "bottom")` line in particular threw an error that is difficult to fix.
 
@@ -582,7 +582,7 @@ animation_slider(currentvalue = list(prefix = "YEAR ", font = list(color = "red"
 htmlwidgets::saveWidget(plotly_Am_Euro_gap, file = "plotly_Am_Euro_gap.html")
 ```
 
-The interactive plot is found [here]().
+The interactive plot is found [here](https://raw.githack.com/STAT545-UBC-students/hw05-rachlobay/master/plotly_Am_Euro_gap.html).
 
 This basically does what gganimate does - we can track how population vs GDP per capita changed over time for Americas and Europe. One awesome and informative aspect of this plot is that if we hover over the plot produced by plotly, we can see what particular country each dot corresponds to. Hence, plotly makes it easier to track particular countries over time than ggnimate does. The drawback was that I couldn't easily find an equivalent to `facet_wrap()` like we have in ggplot2 so that the plots are side-by-side for the Americas and Europe. So, the countries for Americas and Europe are on the same plot, which is not the separation we were looking for.
 
@@ -707,3 +707,6 @@ list.files(pattern = "^test*") # see if our test.pdf file is in our working dire
     ## [1] "test.pdf"
 
 So, there is a test.pdf in our working directory.
+
+Extra:
+======
