@@ -358,7 +358,7 @@ suppressPackageStartupMessages(library(plotly)) # load plotly package
 Also, I will install phantomjs() to display a preview shot of the plot produced using plotly on Github.
 
 ```{r}
-webshot::install_phantomjs()
+suppressPackageStartupMessages(webshot::install_phantomjs())
 ```
 
 First, we can try the easy option and just use ggplotly on Am_Euro_gap_ggplot to see what we get.
