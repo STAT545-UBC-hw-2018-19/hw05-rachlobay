@@ -12,7 +12,7 @@ Table of Contents:
     -   [Drop Oceania and remove unused factor levels](#drop-oceania-and-remove-unused-factor-levels)
     -   [Reorder the levels of countries in the forcats package](#reorder-the-levels-of-countries-in-the-forcats-package)
     -   [Experiment with the arrange() function](#experiment-with-the-arrange-function)
--   [Part 2: File I/O](#part-2-file-i/o)
+-   [Part 2: File I/O](#part-2-file-io)
 -   [Part 3: Visualization design](#part-3-visualization-design)
 -   [Part 4: Writing figures to file](#part-4-writing-figures-to-file)
 
