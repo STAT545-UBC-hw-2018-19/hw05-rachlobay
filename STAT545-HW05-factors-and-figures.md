@@ -540,12 +540,14 @@ webshot::install_phantomjs()
 First, we can try the easy option and just use ggplotly on Am\_Euro\_gap\_ggplot to see what we get.
 
 ``` r
+library(devtools)
+
 ggplotly_Am_Euro <- ggplotly(Am_Euro_gap_ggplot2) # ggplotly Am_Euro_gap_ggplot2 to see what we get.
 
 htmlwidgets::saveWidget(ggplotly_Am_Euro, file = "ggplotly_Am_Euro.html")
 ```
 
-The actual plotly plot is may be interacted with [here](https://github.com/STAT545-UBC-students/hw05-rachlobay/ggplotly_Am_Euro.html).
+The actual plotly plot is may be interacted with [here](https://stat545-ubc-students.github.io/hw05-rachlobay/ggplotly_Am_Euro.html)!.
 
 The result looks like art. It is cool that if we hover over the plot produced by plotly, we can see the important information - what the population, GDP per capita, mean GDP per capita, and what country that the spot that we are hovering over pertains to. However, there are some drawbacks to using ggplotly. For example, when I tried to animate the above ggplotly, it became very difficult very quick because the following `animation_button(x = 1, xanchor = "right", y = 0, yanchor = "bottom")` line in particular threw an error that is difficult to fix.
 
