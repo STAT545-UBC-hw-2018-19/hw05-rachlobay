@@ -355,6 +355,11 @@ We can try to use use the plotly package to accomplish something similar to what
 suppressPackageStartupMessages(library(plotly)) # load plotly package
 ```
 
+Also, I will install and load phantomjs() to display the plots from plotly on Github
+
+```{r}
+webshot::install_phantomjs()
+```
 
 First, we can try the easy option and just use ggplotly on Am_Euro_gap_ggplot to see what we get.
 
@@ -366,8 +371,7 @@ The result looks like art. It is cool that if we hover over the plot produced by
 
 On the other hand, if we manually attach am_Euro_gap and manually create a plot_ly of that data, it becomes easier to animate it. For the base of the following code, see [here](https://plot.ly/r/animations/).
 
-```{r message = FALSE}
-library(plotly) # load plotly package
+```{r warning = FALSE, message = FALSE}
 attach(Am_Euro_gap) # attach am_Euro_gap 
 
 Am_Euro_gap_plotly <-   plot_ly(
