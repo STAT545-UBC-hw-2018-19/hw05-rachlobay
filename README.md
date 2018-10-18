@@ -8,7 +8,7 @@
 - Make a plotly visual.
 - Implement visualization design principles.
 
-## Important links for HW05
+## Important links for HW05:
 
 
 |               | Quick and important links|
