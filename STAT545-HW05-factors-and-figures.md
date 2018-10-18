@@ -529,13 +529,23 @@ We can try to use use the plotly package to accomplish something similar to what
 suppressPackageStartupMessages(library(plotly)) # load plotly package
 ```
 
+Also, I will install and load phantomjs() to display shots of the plots produced using plotly on Github.
+
+``` r
+webshot::install_phantomjs()
+```
+
+    ## phantomjs has been installed to /Users/admin/Library/Application Support/PhantomJS
+
 First, we can try the easy option and just use ggplotly on Am\_Euro\_gap\_ggplot to see what we get.
 
 ``` r
 ggplotly(Am_Euro_gap_ggplot2) # ggplotly Am_Euro_gap_ggplot2 to see what we get.
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-28-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-29-1.png)
+
+The actual plotly plot is may be interacted with [here]().
 
 The result looks like art. It is cool that if we hover over the plot produced by plotly, we can see the important information - what the population, GDP per capita, mean GDP per capita, and what country that the spot that we are hovering over pertains to. However, there are some drawbacks to using ggplotly. For example, when I tried to animate the above ggplotly, it became very difficult very quick because the following `animation_button(x = 1, xanchor = "right", y = 0, yanchor = "bottom")` line in particular threw an error that is difficult to fix.
 
@@ -568,7 +578,7 @@ Am_Euro_gap_plotly %>%
 animation_slider(currentvalue = list(prefix = "YEAR ", font = list(color = "red"))) # add a slider
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-29-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-30-1.png)
 
 This basically does what gganimate does - we can track how population vs GDP per capita changed over time for Americas and Europe. One awesome and informative aspect of this plot is that if we hover over the plot produced by plotly, we can see what particular country each dot corresponds to. Hence, plotly makes it easier to track particular countries over time than ggnimate does. The drawback was that I couldn't easily find an equivalent to `facet_wrap()` like we have in ggplot2 so that the plots are side-by-side for the Americas and Europe. So, the countries for Americas and Europe are on the same plot, which is not the separation we were looking for.
 
@@ -589,7 +599,7 @@ ggplot(aes(x = continent, y = lifeExp, fill = continent)) +
   ggtitle("Life expectancy by each continent for the gapminder data")
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-30-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-31-1.png)
 
 ``` r
 ggsave("lifeExp-continent-violin-plot.png", scale = 1.75) # save the plot using ggsave() 
@@ -658,7 +668,7 @@ y <- c(2,2,2,3,3) # define y vector
 plot(x, y) # simple plot of x versus y 
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-33-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-34-1.png)
 
 When we have a figure up on our screen like that, we can quickly write it as a pdf by doing the following:
 
