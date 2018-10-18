@@ -15,6 +15,7 @@ Table of Contents:
 -   [Part 2: File I/O](#part-2-file-io)
 -   [Part 3: Visualization design](#part-3-visualization-design)
 -   [Part 4: Writing figures to file](#part-4-writing-figures-to-file)
+-   [But I want to do more!](#but-i-want-to-do-more)
 
 # Load the gapminder data set 
 I will be working with the gapminder data set for my final assignment for STAT545A. Since we are very familiarized with that data set because we have used it a lot in class and in previous assignments, I will skip introducing the data set.
@@ -355,17 +356,11 @@ We can try to use use the plotly package to accomplish something similar to what
 suppressPackageStartupMessages(library(plotly)) # load plotly package
 ```
 
-Also, I will install phantomjs() to display a preview shot of the plot produced using plotly on Github.
-
-```{r}
-suppressPackageStartupMessages(webshot::install_phantomjs())
-```
+Also, I will install phantomjs() by using `webshot::install_phantomjs()` to display a preview shot of the plot produced using plotly on Github.
 
 First, we can try the easy option and just use ggplotly on Am_Euro_gap_ggplot to see what we get.
 
 ```{r}
-library(devtools)
-
 ggplotly_Am_Euro <- ggplotly(Am_Euro_gap_ggplot2) # ggplotly Am_Euro_gap_ggplot2 to see what we get.
 
 htmlwidgets::saveWidget(ggplotly_Am_Euro, file = "ggplotly_Am_Euro.html")
@@ -520,4 +515,49 @@ list.files(pattern = "^test*") # see if our test.pdf file is in our working dire
 
 So, there is a test.pdf in our working directory.
 
-# Extra: 
+# But I want to do more
+
+I will pick a handful of the countries, each of which one may associate with a stereotypical desserts. My objective is to create a new factor by mapping the existing country factor levels to the new levels. The factor that I will create is stereotypical desserts for the countries Australia, France, Germany, Italy, Japan, Turkey, and United States.
+
+So, first I must create an excerpt of the Gapminder data, filtered to just those countries. That is easy enough using our handy filter function and the droplevels() function.
+
+```{r}
+dessert_countries <- c("Australia", "Turkey", "United States", "France", "Germany", "Italy", "Japan")
+
+gap_country_desserts <- gapminder %>% 
+  filter(country %in% dessert_countries) %>% 
+  droplevels() # drop unused factor levels (because we'd still have all the countries from gapminder data, if we didn't).
+
+gap_country_desserts$country %>% 
+  levels() # see what the levels of gap_country_desserts$country are.
+```
+
+Awesome. So gap_country_desserts is comprised of the countries that we will use for our stereotypical dessert factor addition.
+
+Next, I will use a combination of the mutate function from the dplyr package and the fct_recode() function from the forcats package, which will allow me to change the factor levels of the countries to have the desserts for the specified countries.
+
+```{r}
+gap_country_desserts <- gap_country_desserts %>% 
+mutate(stereotypicaldessert = fct_recode(country, "Lamingtons" = "Australia", "Turkish Delight" = "Turkey", "Apple Pie" = "United States", "Crème Brûlée" = "France", "Black Forest Cake" = "Germany", "Cannoli" = "Italy", "Matcha Ice Cream" = "Japan"))
+
+head(gap_country_desserts) # have a look at the head of the dataset to see if we got a new column with the desserts corresponding to the country.
+```
+
+Let's also check the tail of gap_country_desserts to check that the country in the last six rows corresponds to the correct stereotypicaldessert.
+
+```{r}
+tail(gap_country_desserts) 
+```
+
+We get what we wanted. To elaborate, we see that United States corresponds to the Apple Pie level of the stereotypicaldessert factor.
+
+Finally, we will check to see what the levels of stereotypicaldessert are. We expect them to be the desserts that we specified above.
+
+```{r}
+gap_country_desserts$stereotypicaldessert %>% 
+  levels()
+```
+
+As was expected, we got that the levels of stereotypicaldessert are the desserts specified for each of the countries from the above subset.
+
+

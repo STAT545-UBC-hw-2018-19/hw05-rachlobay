@@ -13,6 +13,7 @@ Table of Contents:
 -   [Part 2: File I/O](#part-2-file-io)
 -   [Part 3: Visualization design](#part-3-visualization-design)
 -   [Part 4: Writing figures to file](#part-4-writing-figures-to-file)
+-   [But I want to do more!](#but-i-want-to-do-more)
 
 Load the gapminder data set
 ===========================
@@ -529,19 +530,11 @@ We can try to use use the plotly package to accomplish something similar to what
 suppressPackageStartupMessages(library(plotly)) # load plotly package
 ```
 
-Also, I will install phantomjs() to display a preview shot of the plot produced using plotly on Github.
-
-``` r
-webshot::install_phantomjs()
-```
-
-    ## phantomjs has been installed to /Users/admin/Library/Application Support/PhantomJS
+Also, I will install phantomjs() by using `webshot::install_phantomjs()` to display a preview shot of the plot produced using plotly on Github.
 
 First, we can try the easy option and just use ggplotly on Am\_Euro\_gap\_ggplot to see what we get.
 
 ``` r
-library(devtools)
-
 ggplotly_Am_Euro <- ggplotly(Am_Euro_gap_ggplot2) # ggplotly Am_Euro_gap_ggplot2 to see what we get.
 
 htmlwidgets::saveWidget(ggplotly_Am_Euro, file = "ggplotly_Am_Euro.html")
@@ -603,7 +596,7 @@ ggplot(aes(x = continent, y = lifeExp, fill = continent)) +
   ggtitle("Life expectancy by each continent for the gapminder data")
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-31-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-30-1.png)
 
 ``` r
 ggsave("lifeExp-continent-violin-plot.png", scale = 1.75) # save the plot using ggsave() 
@@ -672,7 +665,7 @@ y <- c(2,2,2,3,3) # define y vector
 plot(x, y) # simple plot of x versus y 
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-34-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-33-1.png)
 
 When we have a figure up on our screen like that, we can quickly write it as a pdf by doing the following:
 
@@ -708,5 +701,75 @@ list.files(pattern = "^test*") # see if our test.pdf file is in our working dire
 
 So, there is a test.pdf in our working directory.
 
-Extra:
-======
+But I want to do more
+=====================
+
+I will pick a handful of the countries, each of which one may associate with a stereotypical desserts. My objective is to create a new factor by mapping the existing country factor levels to the new levels. The factor that I will create is stereotypical desserts for the countries Australia, France, Germany, Italy, Japan, Turkey, and United States.
+
+So, first I must create an excerpt of the Gapminder data, filtered to just those countries. That is easy enough using our handy filter function and the droplevels() function.
+
+``` r
+dessert_countries <- c("Australia", "Turkey", "United States", "France", "Germany", "Italy", "Japan")
+
+gap_country_desserts <- gapminder %>% 
+  filter(country %in% dessert_countries) %>% 
+  droplevels() # drop unused factor levels (because we'd still have all the countries from gapminder data, if we didn't).
+
+gap_country_desserts$country %>% 
+  levels() # see what the levels of gap_country_desserts$country are.
+```
+
+    ## [1] "Australia"     "France"        "Germany"       "Italy"        
+    ## [5] "Japan"         "Turkey"        "United States"
+
+Awesome. So gap\_country\_desserts is comprised of the countries that we will use for our stereotypical dessert factor addition.
+
+Next, I will use a combination of the mutate function from the dplyr package and the fct\_recode() function from the forcats package, which will allow me to change the factor levels of the countries to have the desserts for the specified countries.
+
+``` r
+gap_country_desserts <- gap_country_desserts %>% 
+mutate(stereotypicaldessert = fct_recode(country, "Lamingtons" = "Australia", "Turkish Delight" = "Turkey", "Apple Pie" = "United States", "Crème Brûlée" = "France", "Black Forest Cake" = "Germany", "Cannoli" = "Italy", "Matcha Ice Cream" = "Japan"))
+
+head(gap_country_desserts) # have a look at the head of the dataset to see if we got a new column with the desserts corresponding to the country.
+```
+
+    ## # A tibble: 6 x 7
+    ##   country   continent  year lifeExp      pop gdpPercap stereotypicaldessert
+    ##   <fct>     <fct>     <int>   <dbl>    <int>     <dbl> <fct>               
+    ## 1 Australia Oceania    1952    69.1  8691212    10040. Lamingtons          
+    ## 2 Australia Oceania    1957    70.3  9712569    10950. Lamingtons          
+    ## 3 Australia Oceania    1962    70.9 10794968    12217. Lamingtons          
+    ## 4 Australia Oceania    1967    71.1 11872264    14526. Lamingtons          
+    ## 5 Australia Oceania    1972    71.9 13177000    16789. Lamingtons          
+    ## 6 Australia Oceania    1977    73.5 14074100    18334. Lamingtons
+
+Let's also check the tail of gap\_country\_desserts to check that the country in the last six rows corresponds to the correct stereotypicaldessert.
+
+``` r
+tail(gap_country_desserts) 
+```
+
+    ## # A tibble: 6 x 7
+    ##   country     continent  year lifeExp     pop gdpPercap stereotypicaldess…
+    ##   <fct>       <fct>     <int>   <dbl>   <int>     <dbl> <fct>             
+    ## 1 United Sta… Americas   1982    74.6  2.32e8    25010. Apple Pie         
+    ## 2 United Sta… Americas   1987    75.0  2.43e8    29884. Apple Pie         
+    ## 3 United Sta… Americas   1992    76.1  2.57e8    32004. Apple Pie         
+    ## 4 United Sta… Americas   1997    76.8  2.73e8    35767. Apple Pie         
+    ## 5 United Sta… Americas   2002    77.3  2.88e8    39097. Apple Pie         
+    ## 6 United Sta… Americas   2007    78.2  3.01e8    42952. Apple Pie
+
+We get what we wanted. To elaborate, we see that United States corresponds to the Apple Pie level of the stereotypicaldessert factor.
+
+Finally, we will check to see what the levels of stereotypicaldessert are. We expect them to be the desserts that we specified above.
+
+``` r
+gap_country_desserts$stereotypicaldessert %>% 
+  levels()
+```
+
+    ## [1] "Lamingtons"        "Crème Brûlée"      "Black Forest Cake"
+    ## [4] "Cannoli"           "Matcha Ice Cream"  "Turkish Delight"  
+    ## [7] "Apple Pie"
+
+As was expected, we got that the levels of stereotypicaldessert are the desserts specified for each of the countries from the above subset.
