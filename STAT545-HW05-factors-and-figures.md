@@ -15,14 +15,26 @@ Table of Contents:
 -   [Part 4: Writing figures to file](#part-4-writing-figures-to-file)
 -   [But I want to do more!](#but-i-want-to-do-more)
 
+Load required packages
+======================
+
+``` r
+library(tidyverse)
+library(knitr)
+library(devtools) 
+# devtools::install_github('thomasp85/gganimate') # install gganimate package this way because it is not installing when we use the install.packages() function with R 3.5.1. Also, gganimate is Github-based (not based on CRAN).
+library(gganimate)
+library(transformr) # load transformr package to draw line (part of gganimate plot later on)
+library(plotly) # load plotly package
+```
+
 Load the gapminder data set
 ===========================
 
-I will be working with the gapminder data set for my final assignment for STAT545A. Since we are very familiarized with that data set because we have used it a lot in class and in previous assignments, I will skip introducing the data set.
+I will be working with the gapminder data set for my final assignment for STAT545A. Since we are very familiarized with that data set because we have used it a lot in class and in previous assignments, I will only briefly introduce the data set.
 
 ``` r
 library(gapminder) # laod gapminder data set
-suppressPackageStartupMessages(library(tidyverse)) # tidyverse loads dplyr and forcats packages
 ```
 
 Let's have a quick look at the head of the gapminder data set to remind ourselves what we are working with
@@ -40,6 +52,16 @@ head(gapminder) # view top six rows of gapminder data set
     ## 4 Afghanistan Asia       1967    34.0 11537966      836.
     ## 5 Afghanistan Asia       1972    36.1 13079460      740.
     ## 6 Afghanistan Asia       1977    38.4 14880372      786.
+
+Let's also remind ourselves of how many rows there are in the gapminder data set.
+
+``` r
+nrow(gapminder)
+```
+
+    ## [1] 1704
+
+We see that there are 1704 rows.
 
 Ok, so we can clearly see from using the head function that we have the factors, country, continent, year, lifeExp, pop and gdpPercap to work with.
 
@@ -65,7 +87,25 @@ gapminder$continent %>%
 
     ## [1] "Africa"   "Americas" "Asia"     "Europe"   "Oceania"
 
-We can see that the five levels are Africa, Americas, Asia, Europe, and Oceania. This will change below in Part 1 of HW05.
+We can see that the five levels are Africa, Americas, Asia, Europe, and Oceania.
+
+Let's now have a quick look at the number of entries that correspond to the above continents.
+
+``` r
+gapminder$continent %>% 
+fct_count() %>% 
+  kable(col.names = c("Continent","Num")) 
+```
+
+| Continent |  Num|
+|:----------|----:|
+| Africa    |  624|
+| Americas  |  300|
+| Asia      |  396|
+| Europe    |  360|
+| Oceania   |   24|
+
+This will change in Part 1 below, when we drop Oceania.
 
 Part 1: Factor management
 =========================
@@ -84,13 +124,66 @@ gap_no_Oceania <- gapminder %>%
   filter(continent != "Oceania") # filters for rows for all continents but Oceania.
 ```
 
-Now, I can simply use the base R, droplevels() function to drop the observations in the columns that have no observations. We can use the droplevels() function to act upon on our removal of the entries corresponding to Oceania. I chose to use the droplevels() function over the `forcats::fct_drop()` becauze droplevels() operates on either an entire data frame or a factor, while fct\_drop() only operates on a factor.
+Let's check the number of rows of gap\_no\_Oceania. It should have 24 less than the 1704 rows from gapminder because we filtered out Oceania.
 
-Note that we had to store the gap\_no\_Oceania into a variable (I just used gap\_no\_Oceania for simplicity) to make the droplevels() function result last and not just relative to the below code block.
+``` r
+nrow(gap_no_Oceania)
+```
+
+    ## [1] 1680
+
+Great. There are precisely 24 less rows than the 1704 rows from the gapminder data as we expected.
+
+Now, what about the structure of the gap\_no\_Oceania data frame?
+
+``` r
+gap_no_Oceania %>% 
+str()
+```
+
+    ## Classes 'tbl_df', 'tbl' and 'data.frame':    1680 obs. of  6 variables:
+    ##  $ country  : Factor w/ 142 levels "Afghanistan",..: 1 1 1 1 1 1 1 1 1 1 ...
+    ##  $ continent: Factor w/ 5 levels "Africa","Americas",..: 3 3 3 3 3 3 3 3 3 3 ...
+    ##  $ year     : int  1952 1957 1962 1967 1972 1977 1982 1987 1992 1997 ...
+    ##  $ lifeExp  : num  28.8 30.3 32 34 36.1 ...
+    ##  $ pop      : int  8425333 9240934 10267083 11537966 13079460 14880372 12881816 13867957 16317921 22227415 ...
+    ##  $ gdpPercap: num  779 821 853 836 740 ...
+
+Notice that there are still 5 levels for continent. Meaning, even though we have filtered out the rows corresponding to Oceania, we didn't remove Oceania. In support of this, we observe there are still the 142 levels for country, which is the same number of countries as in gapminder.
+
+Now, what do we see when we check the levels of continent for gap\_no\_Oceania?
+
+``` r
+levels(gap_no_Oceania$continent)
+```
+
+    ## [1] "Africa"   "Americas" "Asia"     "Europe"   "Oceania"
+
+The levels of continent still includes Oceania, even though we've filtered out the rows corresponding to that continent.
+
+``` r
+gap_no_Oceania$continent %>% 
+fct_count() %>% 
+  kable(col.names = c("Continent","Num")) 
+```
+
+| Continent |  Num|
+|:----------|----:|
+| Africa    |  624|
+| Americas  |  300|
+| Asia      |  396|
+| Europe    |  360|
+| Oceania   |    0|
+
+This confirms our suspicions. There are 0 entries corresponding to Oceania, but Oceania is still listed under continent.
+
+I can use the base R, droplevels() function to drop the unused factor levels for continent. So, we can use the droplevels() function to to remove unused factor level Oceania.
+
+Note that we had to store the gap\_no\_Oceania into a variable (I just used gap\_no\_Oceania for simplicity) to make the droplevels() function result last.
 
 ``` r
 gap_no_Oceania <- gap_no_Oceania %>% 
-  droplevels() # if no observation in the column, then it drops the corresponding level
+  droplevels() 
 
 gap_no_Oceania %>%
   str() # continent only has levels Africa, Asia, and Europe and the countries of those guys
@@ -106,7 +199,22 @@ gap_no_Oceania %>%
 
 By using the str() function, we can see that gap\_no\_Oceania now has four continent factor levels and not five as we saw originally.
 
-Also, notice that we have 1680 observations of 6 variables in gap\_no\_Oceania. On the other hand, in the original gapminder data frame using the str() function, the output stated that there was 1704 obs. of 6 variables. So, some observations were removed when we used the combo of filter() and droplevels(), but the number of variables remained the same (which is what we wanted).
+We can confirm this visually by using fct\_count.
+
+``` r
+gap_no_Oceania$continent %>% 
+fct_count() %>% 
+  kable(col.names = c("Continent","Num")) 
+```
+
+| Continent |  Num|
+|:----------|----:|
+| Africa    |  624|
+| Americas  |  300|
+| Asia      |  396|
+| Europe    |  360|
+
+So, we now do not have Oceania under Continent.
 
 Let's check to see that Oceania was the continent factor level that was removed!
 
@@ -217,27 +325,21 @@ gap_no_Oceania$country %>%
 ``` r
 # Let's if Australia and New Zealand are to be found in gap_no_Oceania$country.
 gap_no_Oceania %>% 
-  select(country) %>% 
   filter(country %in% c("Australia", "New Zealand")) # filters to Australia and New Zealand rows
 ```
 
-    ## # A tibble: 0 x 1
-    ## # ... with 1 variable: country <fct>
+    ## # A tibble: 0 x 6
+    ## # ... with 6 variables: country <fct>, continent <fct>, year <int>,
+    ## #   lifeExp <dbl>, pop <int>, gdpPercap <dbl>
 
-We can see that there are no rows in the resulting tibble. Hence, we have confirmed that tehre are no Australia and New Zealand rows that were found in gap\_no\_Oceania$country.
+We can see that there are no rows in the resulting tibble. Hence, we have confirmed that there are no Australia and New Zealand rows that were found in gap\_no\_Oceania$country.
 
 Reorder the levels of countries in the forcats package
 ------------------------------------------------------
 
 Here, I will use the forcats package to change the order of the factor levels of a subset of countries in the gapminder data frame. I will base my reordering choice on the quantitative variable lifeExp. Additionally, instead of focusing on the plain ol' median lifeExp, I will use the mean to analyze the life expectancy differences of the countries. I will investigate just the gapminder data of Europe in the year of 2007 to keep the data to a minimum so we can focus on the analysis.
 
-Now, we will load the ggplot2 package to do factor level reordering and display the results graphically.
-
-``` r
-library(ggplot2) # load ggplot2 package
-```
-
-Next, we will filter for just the rows of Europe in 2007 and display the life expectancy of the European countries in a scatterplot.
+Now, we will use the ggplot2 package to do factor level reordering and display the results graphically. Specifically, we will filter for just the rows of Europe in 2007 and display the life expectancy of the European countries in a scatterplot.
 
 ``` r
 gap_europe_2007 <- gapminder %>% 
@@ -248,7 +350,7 @@ ggplot(gap_europe_2007, aes(lifeExp, country)) +
   ggtitle("Life exp. of the European countries in 2007") # add title
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-11-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-18-1.png)
 
 We can see the life expectancies are unordered. The above scatterplot looks rather chaotic and difficult to interpret.
 
@@ -264,7 +366,7 @@ gap_europe_2007 %>%
   ggtitle("Mean life exp. of European countries in 2007 (in ascending order)") # add title
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-12-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-19-1.png)
 
 The resulting scatterplot is much more organized and easy to interpret. For example, we can easily spot that Iceland has the highest mean life expetancy in 2007 of the European countries, which is just under 82 years old. In conclusion, we should probably all move to Iceland if we want to live long lives (just kidding).
 
@@ -280,7 +382,7 @@ gap_europe_2007 %>%
   ggtitle("Mean life exp. of European countries in 2007 (in decreasing order)") # add title
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-13-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-20-1.png)
 
 The same information is conveyed as in the above scatterplot for the ascending order of the mean life expectancy of the European countries in 2007. So, we can still see that Iceland has the highest mean life expectancy at just under 82 years old and Turkey has the lowest mean life expectancy at just under 72 years old (for 2007). I should not that for this data, it probably makes more sense for the first scatterplot (in ascending order) for easy readability of the mean life expectancies of the European countries in 2007.
 
@@ -312,7 +414,7 @@ gap_select %>%
   ggtitle("Life expectancy over time for the top five European countries in 2007") # add title
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-15-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-22-1.png)
 
 Now, we will use `fct_reorder2(f, x, y)` to reorder factor `f`, which for our example would be country. The function looks at max year (x) value and takes corresponding life expectancy (y) value. It will reorder the countries according to the life expectancy at the very end.
 
@@ -325,7 +427,7 @@ ggplot(aes(year, lifeExp)) +
   ggtitle("Life expectancy over time for the top five European countries in 2007") # add title
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-16-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-23-1.png)
 
 Notice that when we used `fct_reorder2()`, Iceland went first, then Switzerland, then Spain. This order corresponds to the order that we saw in the scatterplot of gap\_europe\_2007, which makes sense because we are reordering the five countries by their last life expectancy (which would be in 2007). That is a quick check to make sure that our code and output was what we expected.
 
@@ -371,7 +473,7 @@ gap_select_2007_ascend %>%
   ggtitle("Life expectancy vs. country for the top five European countries in 2007") # add title
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-19-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-26-1.png)
 
 So, the output is not what we want. We wanted the order to be France, Sweden, Spain, Switzerland and then Iceland to be in order of ascending life expectancy.
 
@@ -386,7 +488,7 @@ gap_select_2007_ascend_arr %>% # use the arrange function to display the countri
   ggtitle("Life expectancy vs. country for the top five European countries in 2007") # add title
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-20-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-27-1.png)
 
 Perfect. That scatterplot is exactly what we wanted. The European countries are now arranged according in ascending order of life expectancy in 2007.
 
@@ -463,21 +565,9 @@ Part 3: Visualization design
 
 In the previous HW03 for this course, I tried to use gganimate, which is one kind of package that can enhance ggplot2 by animating ggplot2 graphics. I will try to explore that again and see if, with a better understanding of ggplot2, I can create a plot that is both informative and that more effectively uses the gganimate package.
 
-First, I will load the required packages to use gganimate the way I want to with ggplot2.
+Now, I will show what I made in HW03 by using ggnimate. The following plot/animation illustrates a line chart over time of the mean gdpPercap of Singapore, Kuwait, and Hong Kong. I chose to follow the gdpPercap of those three places over time because they had a high mean GDP per capita of over 25,000 PPP dollars in 2007 (I explored that more in HW03). I thought that revealing the meaan gdpPercap over time would be interesting because then you don't see the whole picture immediately. You can focus more on how the mean gdpPercap got there.
 
 ``` r
-library(devtools) # load devtools package
-
-devtools::install_github('thomasp85/gganimate') # install gganimate package this way because it is not installing when we use the install.packages() function with R 3.5.1. Also, gganimate is Github-based (not based on CRAN).
-
-library(gganimate) # laod gganimate package
-```
-
-Next, I will show what I made in HW03 by using ggnimate. The following plot/animation illustrates a line chart over time of the mean gdpPercap of Singapore, Kuwait, and Hong Kong. I chose to follow the gdpPercap of those three places over time because they had a high mean GDP per capita of over 25,000 PPP dollars in 2007 (I explored that more in HW03). I thought that revealing the meaan gdpPercap over time would be interesting because then you don't see the whole picture immediately. You can focus more on how the mean gdpPercap got there.
-
-``` r
-library(transformr) # load transformr package to draw line
-
 lifeExp.bycontyr <- gapminder %>% 
   select(country, year, gdpPercap) %>% # only select country, year, and gdpPercap columns
   filter((country == "Kuwait" | country == "Singapore" | country == "Hong Kong, China") & year <= 1992) %>%
@@ -491,7 +581,7 @@ lifeExp.bycontyr <- gapminder %>%
 lifeExp.bycontyr # let's see the animation!
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-25-1.gif)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-31-1.gif)
 
 One of the problems that I encountered with this animation was that it ran at a decent speed on my RStudio, but when I pushed it to Github, the animation ran at a snail's pace. I was bummed to learn that there wasn't an quick and easy fix to this becaue the transition\_reveal() is still being worked on. So, I left it at that.
 
@@ -518,17 +608,13 @@ ggplot(aes(pop, gdpPercap, size = meangdp, colour = country)) +
   ease_aes('linear')
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-26-1.gif)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-32-1.gif)
 
 This side-by-side animated plot gives us a feel for how the population vs GDP per capita changed over time for Americas and Europe. It is more general than precise. It allows us to see general patterns, and then we could construct more specific plots for the patterns that we wish to examine.
 
 We can see a couple things right off the bat on the plot. Overall, we can see that as the populations increase, the European countries tyipically have a higher GDP per capita than the countries from the Americas as the years go by. Also note that the size of the points for Europe quickly get much larger than the Americas, meaning that the mean GDP per capita of the European countries gets larger than the Americas countries over time. Another thing to note is that it appears that the GDP per capita of the European countries rise relatively close together as as the population of the European countries stabilizes. On the other hand, for the GDP per capita of the Americas countries, there appears to be two countries which have a relatively stable high population and for which their GDP per capita rise above the rest. Another related observation about the Americas is that the population of the majority of the countries increases over time but their GDP per capita does not get nearly as large as the two countries whose GDP per capita rose above the rest.
 
 We can try to use use the plotly package to accomplish something similar to what gganimate did. Let's examine how exactly the plot produced by plotly differs from the plot that we produced using gganimate.
-
-``` r
-suppressPackageStartupMessages(library(plotly)) # load plotly package
-```
 
 Also, I will install phantomjs() by using `webshot::install_phantomjs()` to display a preview shot of the plot produced using plotly on Github.
 
@@ -596,7 +682,7 @@ ggplot(aes(x = continent, y = lifeExp, fill = continent)) +
   ggtitle("Life expectancy by each continent for the gapminder data")
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-30-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-35-1.png)
 
 ``` r
 ggsave("lifeExp-continent-violin-plot.png", scale = 1.75) # save the plot using ggsave() 
@@ -665,7 +751,7 @@ y <- c(2,2,2,3,3) # define y vector
 plot(x, y) # simple plot of x versus y 
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-33-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-38-1.png)
 
 When we have a figure up on our screen like that, we can quickly write it as a pdf by doing the following:
 
