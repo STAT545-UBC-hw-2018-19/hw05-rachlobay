@@ -21,8 +21,10 @@ Load required packages
 ``` r
 library(tidyverse)
 library(knitr)
+library(scales)
 library(devtools) 
 # devtools::install_github('thomasp85/gganimate') # install gganimate package this way because it is not installing when we use the install.packages() function with R 3.5.1. Also, gganimate is Github-based (not based on CRAN).
+# webshot::install_phantomjs() was installed to include still of plot produced by plotly on Github
 library(gganimate)
 library(transformr) # load transformr package to draw line (part of gganimate plot later on)
 library(plotly) # load plotly package
@@ -321,160 +323,279 @@ We see that the countries Australia and New Zealand were not used, but they were
 Reorder the levels of countries in the forcats package
 ------------------------------------------------------
 
-Here, I will use the forcats package to change the order of the factor levels of a subset of countries in the gapminder data frame. I will base my reordering choice on the quantitative variable lifeExp. Additionally, instead of focusing on the plain ol' median lifeExp, I will use the mean to analyze the life expectancy differences of the countries. I will investigate just the gapminder data of Europe in the year of 2007 to keep the data to a minimum so we can focus on the analysis.
+Here, I will use the forcats package to change the order of the factor levels of a subset of countries in the gapminder data frame. I will base my reordering choice on the quantitative variable meanlifeExp. I will create meanlifeExp and use those means to analyze the life expectancy differences of the countries.
 
-Now, we will use the ggplot2 package to do factor level reordering and display the results graphically. Specifically, we will filter for just the rows of Europe in 2007 and display the life expectancy of the European countries in a scatterplot.
+Now, we will use the ggplot2 package to do factor level reordering and display the results graphically. Specifically, we will filter for just the rows of Europe and display the life expectancy of the European countries in a scatterplot.
 
 ``` r
-gap_europe_2007 <- gapminder %>% 
-  filter(year == 2007, continent == "Europe") # filter the rows to keep just the data of Europe in 2007
+gap_europe <- gapminder %>% 
+  filter(continent == "Europe") %>% # filter the rows corresponding to Europe data
+  group_by(country) %>% 
+  summarize(meanlifeExp = mean(lifeExp))
 
-ggplot(gap_europe_2007, aes(lifeExp, country)) + 
-  geom_point() + # plot the plain old gap_europe_2007 to see the unordered chaos of points that result.
-  ggtitle("Life exp. of the European countries in 2007") # add title
+ggplot(gap_europe, aes(meanlifeExp, country)) + 
+  geom_point() + # plot the plain old gap_europe
+  ggtitle("Mean life exp. of the European countries") # add title
 ```
 
 ![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-24-1.png)
 
 We can see the life expectancies are unordered. The above scatterplot looks rather chaotic and difficult to interpret.
 
-So, we will now use the forcats package to manipulate the order of the factor levels of country specific to this subset of the gapminder data set.
-
-Suppose that we wanted the mean to be in order in ascending or descending order. We will try that out below by employing the forcats package! We will use the `fct_reorder` function to do this because we want to reorder the factor levels by arranging according to another variable (in this case, weighted\_mean). Note that `fct_reorder()` by default orders by the median weighted lifeExp. By default, it computes a summary statistic (default: median) for each category in the factor. Note that our summary statistic will be the mean as we are specifying that as `.fun = mean` in the fct\_reorder() function.
+We will first view the mean life expectancies of each country in a table to plainly see the meanlifeExp of each country.
 
 ``` r
-gap_europe_2007 %>% 
-  mutate(country = fct_reorder(country, lifeExp, .fun = mean)) %>% # reorder the European countries in 2007 by mean life Expectancy (more readable) in ascending order
-  ggplot(aes(lifeExp, country)) + 
-  geom_point() + # plot a scatterplot of the above
-  ggtitle("Mean life exp. of European countries in 2007 (in ascending order)") # add title
+gap_europe %>% 
+  kable()
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-25-1.png)
+| country                |  meanlifeExp|
+|:-----------------------|------------:|
+| Albania                |     68.43292|
+| Austria                |     73.10325|
+| Belgium                |     73.64175|
+| Bosnia and Herzegovina |     67.70783|
+| Bulgaria               |     69.74375|
+| Croatia                |     70.05592|
+| Czech Republic         |     71.51050|
+| Denmark                |     74.37017|
+| Finland                |     72.99192|
+| France                 |     74.34892|
+| Germany                |     73.44442|
+| Greece                 |     73.73317|
+| Hungary                |     69.39317|
+| Iceland                |     76.51142|
+| Ireland                |     73.01725|
+| Italy                  |     74.01383|
+| Montenegro             |     70.29917|
+| Netherlands            |     75.64850|
+| Norway                 |     75.84300|
+| Poland                 |     70.17692|
+| Portugal               |     70.41983|
+| Romania                |     68.29067|
+| Serbia                 |     68.55100|
+| Slovak Republic        |     70.69608|
+| Slovenia               |     71.60075|
+| Spain                  |     74.20342|
+| Sweden                 |     76.17700|
+| Switzerland            |     75.56508|
+| Turkey                 |     59.69642|
+| United Kingdom         |     73.92258|
 
-The resulting scatterplot is much more organized and easy to interpret. For example, we can easily spot that Iceland has the highest mean life expetancy in 2007 of the European countries, which is just under 82 years old. In conclusion, we should probably all move to Iceland if we want to live long lives (just kidding).
+We will now use the forcats package to manipulate the order of the factor levels of country specific to this subset of the gapminder data set.
+
+Suppose that we wanted the mean to be in order in ascending or descending order. We will try that out below by employing the forcats package! We will use the `fct_reorder` function to do this because we want to reorder the factor levels by arranging according to another variable.
+
+Note that `fct_reorder()` by default orders by the median weighted lifeExp. It computes a summary statistic (default: median) for each category in the factor.
+
+Now, we will plot the mean life expectancy by country using ggplot2.
+
+``` r
+gap_europe %>% 
+  mutate(country = fct_reorder(country, meanlifeExp)) %>% 
+  ggplot(aes(meanlifeExp, country)) + 
+  geom_point() + # plot a scatterplot of the above
+  ggtitle("Mean life exp. of European countries (in ascending order)") # add title
+```
+
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-26-1.png)
+
+The resulting scatterplot is much more organized and easy to interpret. For example, we can easily spot that Iceland has the highest mean life expetancy of the European countries, which is around 76.5 years old. In conclusion, we should probably all move to Iceland if we want to live long lives (just kidding).
 
 We may set the parameter of the fct\_reorder() function to .desc = FALSE, but that is unnecessary because, by default fct\_reorder() orders from lowest to highest.
 
 Now, we shall look use `fct_reorder` to view a graph of the contients ordered in descending order. Note that we did set .desc = TRUE to achieve that goal in a quick and easy way.
 
 ``` r
-gap_europe_2007 %>% 
-  mutate(country = fct_reorder(country, lifeExp, .fun = mean, .desc = TRUE)) %>% # reorder the European countries in 2007 by mean life Expectancy (more readable) in descending order
-  ggplot(aes(lifeExp, country)) +
+gap_europe %>% 
+  mutate(country = fct_reorder(country, meanlifeExp, .desc = TRUE)) %>% # reorder the European countries mean life expectancy in descending order
+  ggplot(aes(meanlifeExp, country)) +
   geom_point() + # plot a scatterplot
-  ggtitle("Mean life exp. of European countries in 2007 (in decreasing order)") # add title
+  ggtitle("Mean life exp. of European countries (in decreasing order)") # add title
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-26-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-27-1.png)
 
-The same information is conveyed as in the above scatterplot for the ascending order of the mean life expectancy of the European countries in 2007. So, we can still see that Iceland has the highest mean life expectancy at just under 82 years old and Turkey has the lowest mean life expectancy at just under 72 years old (for 2007). I should not that for this data, it probably makes more sense for the first scatterplot (in ascending order) for easy readability of the mean life expectancies of the European countries in 2007.
+The same information is conveyed as in the above scatterplot for the ascending order of the mean life expectancy of the European countries. So, we can still see that Iceland has the highest mean life expectancy at around 76.5 years old and Turkey has the lowest mean life expectancy at just under 60 years old. I should not that for this data, it probably makes more sense for the first scatterplot (in ascending order) for easy readability of the mean life expectancies of the European countries.
 
-Now, suppose we wanted to hone in on the top five countries with high life expectancies (according to the results of our above scatterplots of the mean life expectancy of the European countries in 2007), which were Iceland, Switzerland, Spain, Sweden, and France. So let's create a subset of the data.
+Now, suppose we wanted to hone in on the top five countries with high mean life expectancies (according to the results of our above scatterplots), which were Iceland, Sweden, Norway, Netherlands, and Switzerland. So we create a subset of the data from the original gapminder data so we can trace their lifeExp over time later on.
 
 ``` r
-select_countries <- c("Iceland", "Switzerland", "Spain", "Sweden", "France")
+select_countries <- c("Iceland", "Sweden", "Norway", "Netherlands", "Switzerland")
+
 gap_select <- gapminder %>%  # df of just the 5 countries
   filter(country %in% select_countries) %>% 
   droplevels() # drop unused levels
 
-head(gap_select) # view the top six rows of our subset of the gapminder data frame
+gap_select %>% 
+  kable() # kable table it
 ```
 
-    ## # A tibble: 6 x 6
-    ##   country continent  year lifeExp      pop gdpPercap
-    ##   <fct>   <fct>     <int>   <dbl>    <int>     <dbl>
-    ## 1 France  Europe     1952    67.4 42459667     7030.
-    ## 2 France  Europe     1957    68.9 44310863     8663.
-    ## 3 France  Europe     1962    70.5 47124000    10560.
-    ## 4 France  Europe     1967    71.6 49569000    13000.
-    ## 5 France  Europe     1972    72.4 51732000    16107.
-    ## 6 France  Europe     1977    73.8 53165019    18293.
+| country     | continent |  year|  lifeExp|       pop|  gdpPercap|
+|:------------|:----------|-----:|--------:|---------:|----------:|
+| Iceland     | Europe    |  1952|   72.490|    147962|   7267.688|
+| Iceland     | Europe    |  1957|   73.470|    165110|   9244.001|
+| Iceland     | Europe    |  1962|   73.680|    182053|  10350.159|
+| Iceland     | Europe    |  1967|   73.730|    198676|  13319.896|
+| Iceland     | Europe    |  1972|   74.460|    209275|  15798.064|
+| Iceland     | Europe    |  1977|   76.110|    221823|  19654.962|
+| Iceland     | Europe    |  1982|   76.990|    233997|  23269.607|
+| Iceland     | Europe    |  1987|   77.230|    244676|  26923.206|
+| Iceland     | Europe    |  1992|   78.770|    259012|  25144.392|
+| Iceland     | Europe    |  1997|   78.950|    271192|  28061.100|
+| Iceland     | Europe    |  2002|   80.500|    288030|  31163.202|
+| Iceland     | Europe    |  2007|   81.757|    301931|  36180.789|
+| Netherlands | Europe    |  1952|   72.130|  10381988|   8941.572|
+| Netherlands | Europe    |  1957|   72.990|  11026383|  11276.193|
+| Netherlands | Europe    |  1962|   73.230|  11805689|  12790.850|
+| Netherlands | Europe    |  1967|   73.820|  12596822|  15363.251|
+| Netherlands | Europe    |  1972|   73.750|  13329874|  18794.746|
+| Netherlands | Europe    |  1977|   75.240|  13852989|  21209.059|
+| Netherlands | Europe    |  1982|   76.050|  14310401|  21399.460|
+| Netherlands | Europe    |  1987|   76.830|  14665278|  23651.324|
+| Netherlands | Europe    |  1992|   77.420|  15174244|  26790.950|
+| Netherlands | Europe    |  1997|   78.030|  15604464|  30246.131|
+| Netherlands | Europe    |  2002|   78.530|  16122830|  33724.758|
+| Netherlands | Europe    |  2007|   79.762|  16570613|  36797.933|
+| Norway      | Europe    |  1952|   72.670|   3327728|  10095.422|
+| Norway      | Europe    |  1957|   73.440|   3491938|  11653.973|
+| Norway      | Europe    |  1962|   73.470|   3638919|  13450.402|
+| Norway      | Europe    |  1967|   74.080|   3786019|  16361.876|
+| Norway      | Europe    |  1972|   74.340|   3933004|  18965.056|
+| Norway      | Europe    |  1977|   75.370|   4043205|  23311.349|
+| Norway      | Europe    |  1982|   75.970|   4114787|  26298.635|
+| Norway      | Europe    |  1987|   75.890|   4186147|  31540.975|
+| Norway      | Europe    |  1992|   77.320|   4286357|  33965.661|
+| Norway      | Europe    |  1997|   78.320|   4405672|  41283.164|
+| Norway      | Europe    |  2002|   79.050|   4535591|  44683.975|
+| Norway      | Europe    |  2007|   80.196|   4627926|  49357.190|
+| Sweden      | Europe    |  1952|   71.860|   7124673|   8527.845|
+| Sweden      | Europe    |  1957|   72.490|   7363802|   9911.878|
+| Sweden      | Europe    |  1962|   73.370|   7561588|  12329.442|
+| Sweden      | Europe    |  1967|   74.160|   7867931|  15258.297|
+| Sweden      | Europe    |  1972|   74.720|   8122293|  17832.025|
+| Sweden      | Europe    |  1977|   75.440|   8251648|  18855.725|
+| Sweden      | Europe    |  1982|   76.420|   8325260|  20667.381|
+| Sweden      | Europe    |  1987|   77.190|   8421403|  23586.929|
+| Sweden      | Europe    |  1992|   78.160|   8718867|  23880.017|
+| Sweden      | Europe    |  1997|   79.390|   8897619|  25266.595|
+| Sweden      | Europe    |  2002|   80.040|   8954175|  29341.631|
+| Sweden      | Europe    |  2007|   80.884|   9031088|  33859.748|
+| Switzerland | Europe    |  1952|   69.620|   4815000|  14734.233|
+| Switzerland | Europe    |  1957|   70.560|   5126000|  17909.490|
+| Switzerland | Europe    |  1962|   71.320|   5666000|  20431.093|
+| Switzerland | Europe    |  1967|   72.770|   6063000|  22966.144|
+| Switzerland | Europe    |  1972|   73.780|   6401400|  27195.113|
+| Switzerland | Europe    |  1977|   75.390|   6316424|  26982.291|
+| Switzerland | Europe    |  1982|   76.210|   6468126|  28397.715|
+| Switzerland | Europe    |  1987|   77.410|   6649942|  30281.705|
+| Switzerland | Europe    |  1992|   78.030|   6995447|  31871.530|
+| Switzerland | Europe    |  1997|   79.370|   7193761|  32135.323|
+| Switzerland | Europe    |  2002|   80.620|   7361757|  34480.958|
+| Switzerland | Europe    |  2007|   81.701|   7554661|  37506.419|
 
 ``` r
 gap_select %>% 
   ggplot(aes(year, lifeExp)) +
   geom_line(aes(group=country, colour=country)) + # plot of life expectancy over time for those 5 countries
-  ggtitle("Life expectancy over time for the top five European countries in 2007") # add title
-```
-
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-28-1.png)
-
-Now, we will use `fct_reorder2(f, x, y)` to reorder factor `f`, which for our example would be country. The function looks at max year (x) value and takes corresponding life expectancy (y) value. It will reorder the countries according to the life expectancy at the very end.
-
-``` r
- # Reorders the five European countries of gap_select according to the life expectancy at the very end.
-gap_select %>% 
-  mutate(country = fct_reorder2(country, year, lifeExp)) %>% 
-ggplot(aes(year, lifeExp)) +
-  geom_line(aes(colour=country)) + # plot of life expectancy over time for those 5 countries
-  ggtitle("Life expectancy over time for the top five European countries in 2007") # add title
+  ggtitle("Mean life exp. over time for the top five European countries with highest mean life exp.") # add title
 ```
 
 ![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-29-1.png)
 
-Notice that when we used `fct_reorder2()`, Iceland went first, then Switzerland, then Spain. This order corresponds to the order that we saw in the scatterplot of gap\_europe\_2007, which makes sense because we are reordering the five countries by their last life expectancy (which would be in 2007). That is a quick check to make sure that our code and output was what we expected.
+Now, we will use `fct_reorder2(f, x, y)` to reorder factor `f`, which for our example would be country. The function looks at max year (x) value and takes corresponding life expectancy (y) value. It will reorder the countries according to the life expectancy at the very end.
+
+``` r
+gap_select %>% 
+  mutate(country = fct_reorder2(country, year, lifeExp)) %>% 
+ggplot(aes(year, lifeExp)) +
+  geom_line(aes(colour=country)) + # plot of life expectancy over time for those 5 countries
+  ggtitle("Life exp. over time for the top five European countries with highest mean life exp.") # add title
+```
+
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-30-1.png)
+
+Notice that when we used `fct_reorder2()`, Iceland went first, then Switzerland, then Sweden. This order corresponds to the reordering of the five countries by their last life expectancy (which would be in 2007). We can confirm that those countries have the highest mean life exp in 2007 by using the filter function to filter for the year 2007.
+
+``` r
+gap_select_2007 <- gap_select %>% 
+   filter(year == 2007) 
+
+ gap_select_2007 %>% 
+  kable()
+```
+
+| country     | continent |  year|  lifeExp|       pop|  gdpPercap|
+|:------------|:----------|-----:|--------:|---------:|----------:|
+| Iceland     | Europe    |  2007|   81.757|    301931|   36180.79|
+| Netherlands | Europe    |  2007|   79.762|  16570613|   36797.93|
+| Norway      | Europe    |  2007|   80.196|   4627926|   49357.19|
+| Sweden      | Europe    |  2007|   80.884|   9031088|   33859.75|
+| Switzerland | Europe    |  2007|   81.701|   7554661|   37506.42|
+
+Notice, that we could reorder the rows of that table by highest life expectancy to easily pinpoint the top three highest life expectancy. This is where the arrange() function comes into play.
 
 Experiment with the arrange() function
 --------------------------------------
 
 I want to explore the arrange() function a little on the top five European countries in terms of life expectancy in 2007.
 
-Let's print out the output for the five countries with the highest life expectancy in 2007.
+We can arrange that data set in terms of increasing life expectancy by reordering the factor levels. Let's do that below. Note that the following code is based on Jenny's from [here](https://www.stat.ubc.ca/~jenny/STAT545A/block08_bossYourFactors.html#specialty-functions-for-making-factors).
 
 ``` r
-gap_select_2007 <- gap_select %>%  
-  filter(year %in% 2007) # tibble of just the 5 countries with the top life expectancy in the year 2007
-
-gap_select_2007 # view the the gap_select_2007 tibble
-```
-
-    ## # A tibble: 5 x 6
-    ##   country     continent  year lifeExp      pop gdpPercap
-    ##   <fct>       <fct>     <int>   <dbl>    <int>     <dbl>
-    ## 1 France      Europe     2007    80.7 61083916    30470.
-    ## 2 Iceland     Europe     2007    81.8   301931    36181.
-    ## 3 Spain       Europe     2007    80.9 40448191    28821.
-    ## 4 Sweden      Europe     2007    80.9  9031088    33860.
-    ## 5 Switzerland Europe     2007    81.7  7554661    37506.
-
-We can arrange that data set in terms of increasing life expectancy. Let's do that below. Note that the following code is based on Jenny's from [here](https://www.stat.ubc.ca/~jenny/STAT545A/block08_bossYourFactors.html#specialty-functions-for-making-factors).
-
-``` r
-gap_select_2007_ascend <- within(gap_select_2007, country <- reorder(country, lifeExp, .fun = mean))
+gap_select_2007_ascend <- within(gap_select_2007, country <- reorder(country, lifeExp))
 
 levels(gap_select_2007_ascend$country) # View the order of the levels of the countries. We expect them to be arranged in ascending order of lifeExp.
 ```
 
-    ## [1] "France"      "Sweden"      "Spain"       "Switzerland" "Iceland"
+    ## [1] "Netherlands" "Norway"      "Sweden"      "Switzerland" "Iceland"
 
-However, we can see if we look at gap\_select\_2007\_ascend, the row order has not changed to be arranged in order of ascending mean lifeExp. Let's view it as a scatterplot to see this.
+However, if we look at gap\_select\_2007\_ascend, the row order has not changed to be arranged in order of ascending mean lifeExp.
+
+Let's view it as a scatterplot to see see if the reordering of the levels impacts the scatterplot arrangement.
 
 ``` r
-gap_select_2007_ascend %>% 
+gap_select_2007 %>% 
   ggplot(aes(lifeExp, country)) + 
   geom_point() + # plot a scatterplot of life expectancy versus country for the five European countries with the highest life expectancies in 2007
   ggtitle("Life expectancy vs. country for the top five European countries in 2007") # add title
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-32-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-33-1.png)
 
-So, the output is not what we want. We wanted the order to be France, Sweden, Spain, Switzerland and then Iceland to be in order of ascending life expectancy.
+Interestingly, we got what we wanted. We wanted the order to be Netherlands, Norway, Sweden, Switzerland and then Iceland to be in order of ascending life expectancy.
 
-The arrange function comes to our rescue. This funciton from the plyr package lets us reorder the factor levels and make the new row order remain. As Jenny stated on her webpage (see the above link), the arrange function "is a nice wrapper around the built-in function order()".
+As for the table issue, the arrange function comes to our rescue. This function from the plyr package lets us reorder the factor levels and make the new row order remain. As Jenny stated on her webpage (see the above link), the arrange function "is a nice wrapper around the built-in function order()".
+
+Let's view a table of the results when we use the arrange function.
 
 ``` r
-gap_select_2007_ascend_arr <- arrange(gap_select_2007_ascend, country) 
+gap_select_2007_ascend_arr <- arrange(gap_select_2007_ascend, country)
 
+gap_select_2007_ascend_arr %>% 
+  kable()
+```
+
+| country     | continent |  year|  lifeExp|       pop|  gdpPercap|
+|:------------|:----------|-----:|--------:|---------:|----------:|
+| Netherlands | Europe    |  2007|   79.762|  16570613|   36797.93|
+| Norway      | Europe    |  2007|   80.196|   4627926|   49357.19|
+| Sweden      | Europe    |  2007|   80.884|   9031088|   33859.75|
+| Switzerland | Europe    |  2007|   81.701|   7554661|   37506.42|
+| Iceland     | Europe    |  2007|   81.757|    301931|   36180.79|
+
+So, we did get that the rows were arranged in order of increasing lifeExp when we used arrange().
+
+``` r
 gap_select_2007_ascend_arr %>% # use the arrange function to display the countries in order of ascending life expectancy
   ggplot(aes(lifeExp, country)) + 
   geom_point() + # plot a scatterplot of life expectancy versus country for the five countries with the highest  life expectancies in 2007
   ggtitle("Life expectancy vs. country for the top five European countries in 2007") # add title
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-33-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-35-1.png)
 
-Perfect. That scatterplot is exactly what we wanted. The European countries are now arranged according in ascending order of life expectancy in 2007.
+Additionally, the scatterplot is still exactly what we wanted. The European countries are arranged according in ascending order of life expectancy in 2007. So, the arrange() function doesn't appear to have an impact on figures.
 
 Part 2: File I/O
 ================
@@ -494,9 +615,9 @@ gap_select_2007_read # view the read-in gap_select_2007.csv
 ```
 
     ##   X     country continent year lifeExp      pop gdpPercap
-    ## 1 1      France    Europe 2007  80.657 61083916  30470.02
-    ## 2 2     Iceland    Europe 2007  81.757   301931  36180.79
-    ## 3 3       Spain    Europe 2007  80.941 40448191  28821.06
+    ## 1 1     Iceland    Europe 2007  81.757   301931  36180.79
+    ## 2 2 Netherlands    Europe 2007  79.762 16570613  36797.93
+    ## 3 3      Norway    Europe 2007  80.196  4627926  49357.19
     ## 4 4      Sweden    Europe 2007  80.884  9031088  33859.75
     ## 5 5 Switzerland    Europe 2007  81.701  7554661  37506.42
 
@@ -513,9 +634,9 @@ gap_select_2007_read_2 # let's see what we got when we read in the CSV
 ```
 
     ##       country continent year lifeExp      pop gdpPercap
-    ## 1      France    Europe 2007  80.657 61083916  30470.02
-    ## 2     Iceland    Europe 2007  81.757   301931  36180.79
-    ## 3       Spain    Europe 2007  80.941 40448191  28821.06
+    ## 1     Iceland    Europe 2007  81.757   301931  36180.79
+    ## 2 Netherlands    Europe 2007  79.762 16570613  36797.93
+    ## 3      Norway    Europe 2007  80.196  4627926  49357.19
     ## 4      Sweden    Europe 2007  80.884  9031088  33859.75
     ## 5 Switzerland    Europe 2007  81.701  7554661  37506.42
 
@@ -528,21 +649,35 @@ Next, I will look at the when the rows are in ascending order of life expectancy
 write.csv(gap_select_2007_ascend_arr, file = "gap_select_2007_ascend_arr.csv", row.names=FALSE) 
 
 # Read in gap_select_2007_ascend_arr.csv
-gap_select_2007_ascend_arr <- read.csv("gap_select_2007_ascend_arr.csv") 
+gap_select_2007_ascend_arr1 <- read.csv("gap_select_2007_ascend_arr.csv") 
 
-gap_select_2007_ascend_arr # let's see what we got when we read in the CSV
+gap_select_2007_ascend_arr1 # let's see what we got when we read in the CSV
 ```
 
     ##       country continent year lifeExp      pop gdpPercap
-    ## 1      France    Europe 2007  80.657 61083916  30470.02
-    ## 2      Sweden    Europe 2007  80.884  9031088  33859.75
-    ## 3       Spain    Europe 2007  80.941 40448191  28821.06
+    ## 1 Netherlands    Europe 2007  79.762 16570613  36797.93
+    ## 2      Norway    Europe 2007  80.196  4627926  49357.19
+    ## 3      Sweden    Europe 2007  80.884  9031088  33859.75
     ## 4 Switzerland    Europe 2007  81.701  7554661  37506.42
     ## 5     Iceland    Europe 2007  81.757   301931  36180.79
 
 Interesting. We had gap\_select\_2007\_ascend\_arr in order of ascending life expectancy and when we import the CSV file that we wrote using that data, the row order was preserved.
 
-That certainly makes working with that data easier. We don't have to use the rearrange the data once we import it (well, for this example we don't... other data sets may require data rearrangement).
+What if we look at the levels of gap\_select\_2007\_ascend\_arr, which were in order of ascending life expectancy? Did that survive the CSV round trip to gap\_select\_2007\_ascend\_arr1?
+
+``` r
+levels(gap_select_2007_ascend_arr$country) # order of ascending life expectancy
+```
+
+    ## [1] "Netherlands" "Norway"      "Sweden"      "Switzerland" "Iceland"
+
+``` r
+levels(gap_select_2007_ascend_arr1$country) # after CSV round trip
+```
+
+    ## [1] "Iceland"     "Netherlands" "Norway"      "Sweden"      "Switzerland"
+
+Nope. It looks like the levels after the CSV round trip were rearranged in alphabetical order.
 
 Part 3: Visualization design
 ============================
@@ -565,11 +700,11 @@ lifeExp.bycontyr <- gapminder %>%
 lifeExp.bycontyr # let's see the animation!
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-37-1.gif)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-41-1.gif)
 
 One of the problems that I encountered with this animation was that it ran at a decent speed on my RStudio, but when I pushed it to Github, the animation ran at a snail's pace. I was bummed to learn that there wasn't an quick and easy fix to this becaue the transition\_reveal() is still being worked on. So, I left it at that.
 
-Now, I am aiming to display different information from the gapminder data set and use the gganimate package. What I want to display is how the GDP per capita and populations of Americas and Europe changed over time. The size of the points corresponds to the mean gdpPercap at that time. For the base of the following code, see [here](https://github.com/thomasp85/gganimate).
+Now, I am aiming to display different information from the gapminder data set and use the gganimate package. What I want to display is how the GDP per capita vs. populations of Americas and Europe changed over time. The size of the points corresponds to the mean gdpPercap at that time. For the base of the following code, see [here](https://github.com/thomasp85/gganimate).
 
 ``` r
 Am_Euro_gap <- gapminder %>% 
@@ -582,17 +717,19 @@ ggplot(aes(pop, gdpPercap, size = meangdp, colour = country)) +
   scale_colour_manual(values = country_colors) +
   scale_size(range = c(2, 12)) +
   geom_point(alpha = 0.8, show.legend = FALSE) +
-  scale_x_log10() + # scale the gdpPercap by log10
+  scale_x_log10(labels = comma_format()) + # scale the gdpPercap by log10 and put in comman format
+  scale_y_continuous(labels = dollar_format(), 
+                     breaks = seq(10000, 50000, by=5000)) +
   facet_wrap(~ continent) # facet_wrap by continent
-  
+
   Am_Euro_gap_ggplot2 + 
   # gganimate code parts are below 
-  labs(title = 'Year: {frame_time}', x = 'population', y = 'GDP per capita') +
+  labs(title = 'Year: {frame_time}   GDP per cap vs. pop. of Americas and Europe over time', x = 'population', y = 'GDP per capita') +
   transition_time(year) +
   ease_aes('linear')
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-38-1.gif)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-42-1.gif)
 
 This side-by-side animated plot gives us a feel for how the population vs GDP per capita changed over time for Americas and Europe. It is more general than precise. It allows us to see general patterns, and then we could construct more specific plots for the patterns that we wish to examine.
 
@@ -600,7 +737,7 @@ We can see a couple things right off the bat on the plot. Overall, we can see th
 
 We can try to use use the plotly package to accomplish something similar to what gganimate did. Let's examine how exactly the plot produced by plotly differs from the plot that we produced using gganimate.
 
-Also, I will install phantomjs() by using `webshot::install_phantomjs()` to display a preview shot of the plot produced using plotly on Github.
+Also, I installed phantomjs() by using `webshot::install_phantomjs()` to display a preview shot of the plot produced using plotly on Github.
 
 First, we can try the easy option and just use ggplotly on Am\_Euro\_gap\_ggplot to see what we get.
 
@@ -612,7 +749,7 @@ htmlwidgets::saveWidget(ggplotly_Am_Euro, file = "ggplotly_Am_Euro.html")
 
 The actual plotly plot is may be interacted with [here](https://raw.githack.com/STAT545-UBC-students/hw05-rachlobay/master/ggplotly_Am_Euro.html).
 
-The result looks like art. It is cool that if we hover over the plot produced by plotly, we can see the important information - what the population, GDP per capita, mean GDP per capita, and what country that the spot that we are hovering over pertains to. However, there are some drawbacks to using ggplotly. For example, when I tried to animate the above ggplotly, it became very difficult very quick because the following `animation_button(x = 1, xanchor = "right", y = 0, yanchor = "bottom")` line in particular threw an error that is difficult to fix.
+The result looks like art, but doesn't show the transition over time like gganimate did. However, it is cool that if we hover over the plot produced by plotly, we can see the important information - what the population, GDP per capita, mean GDP per capita, and what country that the spot that we are hovering over pertains to. However, there are some drawbacks to using ggplotly. For example, when I tried to animate the above ggplotly, it became very difficult very quick because the following `animation_button(x = 1, xanchor = "right", y = 0, yanchor = "bottom")` line in particular threw an error that is difficult to fix.
 
 On the other hand, if we manually attach am\_Euro\_gap and manually create a plot\_ly of that data, it becomes easier to animate it. For the base of the following code, see [here](https://plot.ly/r/animations/).
 
@@ -666,7 +803,7 @@ ggplot(aes(x = continent, y = lifeExp, fill = continent)) +
   ggtitle("Life expectancy by each continent for the gapminder data")
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-41-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-45-1.png)
 
 ``` r
 ggsave("lifeExp-continent-violin-plot.png", scale = 1.75) # save the plot using ggsave() 
@@ -735,7 +872,7 @@ y <- c(2,2,2,3,3) # define y vector
 plot(x, y) # simple plot of x versus y 
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-44-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-48-1.png)
 
 When we have a figure up on our screen like that, we can quickly write it as a pdf by doing the following:
 
