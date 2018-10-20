@@ -7,7 +7,8 @@ always_allow_html: yes
 ---
 Table of Contents:
 
--   [Load the gapminder data set](#load-the-gapminder-data-set)
+-   [Load required packages](#load-required-packages)
+-   [The gapminder data set](#the-gapminder-data-set)
 -   [Part 1: Factor management](#part-1-factor-management)
     -   [Drop Oceania and remove unused factor levels](#drop-oceania-and-remove-unused-factor-levels)
     -   [Reorder the levels of countries in the forcats package](#reorder-the-levels-of-countries-in-the-forcats-package)
@@ -19,6 +20,8 @@ Table of Contents:
 
 # Load required packages
 
+First, I will load the required packages along with the gapminder data set that I will be working with for my final assignment for STAT545A. 
+
 ```{r message = FALSE, warning = FALSE}
 library(tidyverse)
 library(knitr)
@@ -28,17 +31,13 @@ library(devtools)
 # webshot::install_phantomjs() was installed to include still of plot produced by plotly on Github
 library(gganimate)
 library(transformr) # load transformr package to draw line (part of gganimate plot later on)
-library(plotly) # load plotly package
+library(plotly) 
+library(gapminder)
 ```
 
-# Load the gapminder data set 
+# The gapminder data set 
 
-I will be working with the gapminder data set for my final assignment for STAT545A. Since we are very familiarized with that data set because we have used it a lot in class and in previous assignments, I will only briefly introduce the data set.
-
-```{r}
-library(gapminder) # laod gapminder data set
-```
-
+Since we are very familiarized with the gapminder data set because we have used it a lot in class and in previous assignments, I will only briefly introduce the data set.
 
 Let's have a quick look at the head of the gapminder data set to remind ourselves what we are working with
 

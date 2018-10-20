@@ -5,7 +5,8 @@ Rachel Lobay
 
 Table of Contents:
 
--   [Load the gapminder data set](#load-the-gapminder-data-set)
+-   [Load required packages](#load-required-packages)
+-   [The gapminder data set](#the-gapminder-data-set)
 -   [Part 1: Factor management](#part-1-factor-management)
     -   [Drop Oceania and remove unused factor levels](#drop-oceania-and-remove-unused-factor-levels)
     -   [Reorder the levels of countries in the forcats package](#reorder-the-levels-of-countries-in-the-forcats-package)
@@ -18,6 +19,8 @@ Table of Contents:
 Load required packages
 ======================
 
+First, I will load the required packages along with the gapminder data set that I will be working with for my final assignment for STAT545A.
+
 ``` r
 library(tidyverse)
 library(knitr)
@@ -27,17 +30,14 @@ library(devtools)
 # webshot::install_phantomjs() was installed to include still of plot produced by plotly on Github
 library(gganimate)
 library(transformr) # load transformr package to draw line (part of gganimate plot later on)
-library(plotly) # load plotly package
+library(plotly) 
+library(gapminder)
 ```
 
-Load the gapminder data set
-===========================
+The gapminder data set
+======================
 
-I will be working with the gapminder data set for my final assignment for STAT545A. Since we are very familiarized with that data set because we have used it a lot in class and in previous assignments, I will only briefly introduce the data set.
-
-``` r
-library(gapminder) # laod gapminder data set
-```
+Since we are very familiarized with the gapminder data set because we have used it a lot in class and in previous assignments, I will only briefly introduce the data set.
 
 Let's have a quick look at the head of the gapminder data set to remind ourselves what we are working with
 
@@ -338,7 +338,7 @@ ggplot(gap_europe, aes(meanlifeExp, country)) +
   ggtitle("Mean life exp. of the European countries") # add title
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-24-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-23-1.png)
 
 We can see the life expectancies are unordered. The above scatterplot looks rather chaotic and difficult to interpret.
 
@@ -398,7 +398,7 @@ gap_europe %>%
   ggtitle("Mean life exp. of European countries (in ascending order)") # add title
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-26-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-25-1.png)
 
 The resulting scatterplot is much more organized and easy to interpret. For example, we can easily spot that Iceland has the highest mean life expetancy of the European countries, which is around 76.5 years old. In conclusion, we should probably all move to Iceland if we want to live long lives (just kidding).
 
@@ -414,7 +414,7 @@ gap_europe %>%
   ggtitle("Mean life exp. of European countries (in decreasing order)") # add title
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-27-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-26-1.png)
 
 The same information is conveyed as in the above scatterplot for the ascending order of the mean life expectancy of the European countries. So, we can still see that Iceland has the highest mean life expectancy at around 76.5 years old and Turkey has the lowest mean life expectancy at just under 60 years old. I should not that for this data, it probably makes more sense for the first scatterplot (in ascending order) for easy readability of the mean life expectancies of the European countries.
 
@@ -501,7 +501,7 @@ gap_select %>%
   ggtitle("Mean life exp. over time for the top five European countries with highest mean life exp.") # add title
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-29-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-28-1.png)
 
 Now, we will use `fct_reorder2(f, x, y)` to reorder factor `f`, which for our example would be country. The function looks at max year (x) value and takes corresponding life expectancy (y) value. It will reorder the countries according to the life expectancy at the very end.
 
@@ -513,7 +513,7 @@ ggplot(aes(year, lifeExp)) +
   ggtitle("Life exp. over time for the top five European countries with highest mean life exp.") # add title
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-30-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-29-1.png)
 
 Notice that when we used `fct_reorder2()`, Iceland went first, then Switzerland, then Sweden. This order corresponds to the reordering of the five countries by their last life expectancy (which would be in 2007). We can confirm that those countries have the highest mean life exp in 2007 by using the filter function to filter for the year 2007.
 
@@ -561,7 +561,7 @@ gap_select_2007 %>%
   ggtitle("Life expectancy vs. country for the top five European countries in 2007") # add title
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-33-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-32-1.png)
 
 Interestingly, we got what we wanted. We wanted the order to be Netherlands, Norway, Sweden, Switzerland and then Iceland to be in order of ascending life expectancy.
 
@@ -593,7 +593,7 @@ gap_select_2007_ascend_arr %>% # use the arrange function to display the countri
   ggtitle("Life expectancy vs. country for the top five European countries in 2007") # add title
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-35-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-34-1.png)
 
 Additionally, the scatterplot is still exactly what we wanted. The European countries are arranged according in ascending order of life expectancy in 2007. So, the arrange() function doesn't appear to have an impact on figures.
 
@@ -700,7 +700,7 @@ lifeExp.bycontyr <- gapminder %>%
 lifeExp.bycontyr # let's see the animation!
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-41-1.gif)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-40-1.gif)
 
 One of the problems that I encountered with this animation was that it ran at a decent speed on my RStudio, but when I pushed it to Github, the animation ran at a snail's pace. I was bummed to learn that there wasn't an quick and easy fix to this becaue the transition\_reveal() is still being worked on. So, I left it at that.
 
@@ -729,7 +729,7 @@ ggplot(aes(pop, gdpPercap, size = meangdp, colour = country)) +
   ease_aes('linear')
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-42-1.gif)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-41-1.gif)
 
 This side-by-side animated plot gives us a feel for how the population vs GDP per capita changed over time for Americas and Europe. It is more general than precise. It allows us to see general patterns, and then we could construct more specific plots for the patterns that we wish to examine.
 
@@ -803,7 +803,7 @@ ggplot(aes(x = continent, y = lifeExp, fill = continent)) +
   ggtitle("Life expectancy by each continent for the gapminder data")
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-45-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-44-1.png)
 
 ``` r
 ggsave("lifeExp-continent-violin-plot.png", scale = 1.75) # save the plot using ggsave() 
@@ -872,7 +872,7 @@ y <- c(2,2,2,3,3) # define y vector
 plot(x, y) # simple plot of x versus y 
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-48-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-47-1.png)
 
 When we have a figure up on our screen like that, we can quickly write it as a pdf by doing the following:
 
