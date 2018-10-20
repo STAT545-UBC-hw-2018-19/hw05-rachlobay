@@ -179,14 +179,18 @@ This confirms our suspicions. There are 0 entries corresponding to Oceania, but 
 
 I can use the base R, droplevels() function to drop the unused factor levels for continent. So, we can use the droplevels() function to to remove unused factor level Oceania.
 
-Note that we had to store the gap\_no\_Oceania into a variable (I just used gap\_no\_Oceania for simplicity) to make the droplevels() function result last.
+Note that we had to store the gap\_no\_Oceania into a variable (I called it gap\_no\_Oceania\_droplevels) to make the droplevels() function result last.
 
 ``` r
-gap_no_Oceania <- gap_no_Oceania %>% 
+gap_no_Oceania_droplevels <- gap_no_Oceania %>% 
   droplevels() 
+```
 
-gap_no_Oceania %>%
-  str() # continent only has levels Africa, Asia, and Europe and the countries of those guys
+Now, we will view the structure of gap\_no\_Oceania\_droplevels.
+
+``` r
+gap_no_Oceania_droplevels %>%
+  str() 
 ```
 
     ## Classes 'tbl_df', 'tbl' and 'data.frame':    1680 obs. of  6 variables:
@@ -197,12 +201,12 @@ gap_no_Oceania %>%
     ##  $ pop      : int  8425333 9240934 10267083 11537966 13079460 14880372 12881816 13867957 16317921 22227415 ...
     ##  $ gdpPercap: num  779 821 853 836 740 ...
 
-By using the str() function, we can see that gap\_no\_Oceania now has four continent factor levels and not five as we saw originally.
+By using the str() function, we can see that gap\_no\_Oceania\_droplevels now has four continent factor levels and not five as we saw before. Additionally, there are 140 levels for country and not 142 as we observed before we used droplevels().
 
-We can confirm this visually by using fct\_count.
+We can confirm that Oceania was droppped in a visual way by using fct\_count().
 
 ``` r
-gap_no_Oceania$continent %>% 
+gap_no_Oceania_droplevels$continent %>% 
 fct_count() %>% 
   kable(col.names = c("Continent","Num")) 
 ```
@@ -214,12 +218,12 @@ fct_count() %>%
 | Asia      |  396|
 | Europe    |  360|
 
-So, we now do not have Oceania under Continent.
+So, we do not have Oceania under continent now.
 
 Let's check to see that Oceania was the continent factor level that was removed!
 
 ``` r
-gap_no_Oceania$continent %>% 
+gap_no_Oceania_droplevels$continent %>% 
   levels() # see what the levels of gap_no_Oceania$continent are.
 ```
 
@@ -227,7 +231,7 @@ gap_no_Oceania$continent %>%
 
 Success! We can see that we only have the four continents, Africa, Americas, Asia and Europe as our factor levels for continent. We no longer have Oceania as a factor level for continent. So we succeeded in dropping the unused level from the continent factor in the gapminder data frame.
 
-We can also check that the countries corresponding to Oceania were dropped in gap\_no\_Oceania.
+We can also check that the countries corresponding to Oceania were dropped in gap\_no\_Oceania\_droplevels.
 
 First, let's view the countries of Oceania from the gapminder data frame.
 
@@ -235,7 +239,7 @@ First, let's view the countries of Oceania from the gapminder data frame.
 gapminder %>% 
   filter(continent == "Oceania") %>% 
   select(country) %>% 
-  unique()  # see what the possible countries are in Oceania
+  unique()  # see what the unique countries are in Oceania
 ```
 
     ## # A tibble: 2 x 1
@@ -244,87 +248,10 @@ gapminder %>%
     ## 1 Australia  
     ## 2 New Zealand
 
-Notice that the only countries corresponding to Oceania in the gapminder data frame are Australia and New Zealand. So, we would expect Australia and New Zealand to be missing in gap\_no\_Oceania$country.
+Notice that the only countries corresponding to Oceania in the gapminder data frame are Australia and New Zealand. So, we would expect Australia and New Zealand to be missing in gap\_no\_Oceania\_droplevels$country.
 
 ``` r
-gap_no_Oceania$country %>% 
-  levels() # see what the levels of gap_no_Oceania$country are.
-```
-
-    ##   [1] "Afghanistan"              "Albania"                 
-    ##   [3] "Algeria"                  "Angola"                  
-    ##   [5] "Argentina"                "Austria"                 
-    ##   [7] "Bahrain"                  "Bangladesh"              
-    ##   [9] "Belgium"                  "Benin"                   
-    ##  [11] "Bolivia"                  "Bosnia and Herzegovina"  
-    ##  [13] "Botswana"                 "Brazil"                  
-    ##  [15] "Bulgaria"                 "Burkina Faso"            
-    ##  [17] "Burundi"                  "Cambodia"                
-    ##  [19] "Cameroon"                 "Canada"                  
-    ##  [21] "Central African Republic" "Chad"                    
-    ##  [23] "Chile"                    "China"                   
-    ##  [25] "Colombia"                 "Comoros"                 
-    ##  [27] "Congo, Dem. Rep."         "Congo, Rep."             
-    ##  [29] "Costa Rica"               "Cote d'Ivoire"           
-    ##  [31] "Croatia"                  "Cuba"                    
-    ##  [33] "Czech Republic"           "Denmark"                 
-    ##  [35] "Djibouti"                 "Dominican Republic"      
-    ##  [37] "Ecuador"                  "Egypt"                   
-    ##  [39] "El Salvador"              "Equatorial Guinea"       
-    ##  [41] "Eritrea"                  "Ethiopia"                
-    ##  [43] "Finland"                  "France"                  
-    ##  [45] "Gabon"                    "Gambia"                  
-    ##  [47] "Germany"                  "Ghana"                   
-    ##  [49] "Greece"                   "Guatemala"               
-    ##  [51] "Guinea"                   "Guinea-Bissau"           
-    ##  [53] "Haiti"                    "Honduras"                
-    ##  [55] "Hong Kong, China"         "Hungary"                 
-    ##  [57] "Iceland"                  "India"                   
-    ##  [59] "Indonesia"                "Iran"                    
-    ##  [61] "Iraq"                     "Ireland"                 
-    ##  [63] "Israel"                   "Italy"                   
-    ##  [65] "Jamaica"                  "Japan"                   
-    ##  [67] "Jordan"                   "Kenya"                   
-    ##  [69] "Korea, Dem. Rep."         "Korea, Rep."             
-    ##  [71] "Kuwait"                   "Lebanon"                 
-    ##  [73] "Lesotho"                  "Liberia"                 
-    ##  [75] "Libya"                    "Madagascar"              
-    ##  [77] "Malawi"                   "Malaysia"                
-    ##  [79] "Mali"                     "Mauritania"              
-    ##  [81] "Mauritius"                "Mexico"                  
-    ##  [83] "Mongolia"                 "Montenegro"              
-    ##  [85] "Morocco"                  "Mozambique"              
-    ##  [87] "Myanmar"                  "Namibia"                 
-    ##  [89] "Nepal"                    "Netherlands"             
-    ##  [91] "Nicaragua"                "Niger"                   
-    ##  [93] "Nigeria"                  "Norway"                  
-    ##  [95] "Oman"                     "Pakistan"                
-    ##  [97] "Panama"                   "Paraguay"                
-    ##  [99] "Peru"                     "Philippines"             
-    ## [101] "Poland"                   "Portugal"                
-    ## [103] "Puerto Rico"              "Reunion"                 
-    ## [105] "Romania"                  "Rwanda"                  
-    ## [107] "Sao Tome and Principe"    "Saudi Arabia"            
-    ## [109] "Senegal"                  "Serbia"                  
-    ## [111] "Sierra Leone"             "Singapore"               
-    ## [113] "Slovak Republic"          "Slovenia"                
-    ## [115] "Somalia"                  "South Africa"            
-    ## [117] "Spain"                    "Sri Lanka"               
-    ## [119] "Sudan"                    "Swaziland"               
-    ## [121] "Sweden"                   "Switzerland"             
-    ## [123] "Syria"                    "Taiwan"                  
-    ## [125] "Tanzania"                 "Thailand"                
-    ## [127] "Togo"                     "Trinidad and Tobago"     
-    ## [129] "Tunisia"                  "Turkey"                  
-    ## [131] "Uganda"                   "United Kingdom"          
-    ## [133] "United States"            "Uruguay"                 
-    ## [135] "Venezuela"                "Vietnam"                 
-    ## [137] "West Bank and Gaza"       "Yemen, Rep."             
-    ## [139] "Zambia"                   "Zimbabwe"
-
-``` r
-# Let's if Australia and New Zealand are to be found in gap_no_Oceania$country.
-gap_no_Oceania %>% 
+gap_no_Oceania_droplevels %>% 
   filter(country %in% c("Australia", "New Zealand")) # filters to Australia and New Zealand rows
 ```
 
@@ -332,7 +259,64 @@ gap_no_Oceania %>%
     ## # ... with 6 variables: country <fct>, continent <fct>, year <int>,
     ## #   lifeExp <dbl>, pop <int>, gdpPercap <dbl>
 
-We can see that there are no rows in the resulting tibble. Hence, we have confirmed that there are no Australia and New Zealand rows that were found in gap\_no\_Oceania$country.
+We can see that there are no rows in the resulting tibble. Hence, we have confirmed that there are no Australia and New Zealand rows that were found in gap\_no\_Oceania\_droplevels$country.
+
+Instead of using droplevels(), we could have used fct\_drop(). The difference is that fct\_drop() would drop only the levels corresponding to continent, whereas droplevels() impacted the data frame. For example, we saw that droplevels() impacted the country factor (we only had 140 countries in gap\_no\_Oceania\_droplevels instead of the original 142 as in gapminder).
+
+Let's try out fct\_drop() to only drop the continent levels and see the results for ourselves!
+
+``` r
+gap_no_Oceania_fct <- gap_no_Oceania %>% 
+  mutate(continent = fct_drop(continent))
+```
+
+Let's check the number of rows in gap\_no\_Oceania\_fct.
+
+``` r
+nrow(gap_no_Oceania_fct)
+```
+
+    ## [1] 1680
+
+As was the case for droplevels(), we get 1680 rows (corresponding to just the Oceania rows being removed).
+
+``` r
+levels(gap_no_Oceania_fct$continent)
+```
+
+    ## [1] "Africa"   "Americas" "Asia"     "Europe"
+
+The levels of gap\_no\_Oceania\_fct$continent are all the continents but Oceania, as was the case when we used droplevels().
+
+Now, if we look at the structure of gap\_no\_Oceania\_fct, what do we see?
+
+``` r
+gap_no_Oceania_fct %>% 
+  str()
+```
+
+    ## Classes 'tbl_df', 'tbl' and 'data.frame':    1680 obs. of  6 variables:
+    ##  $ country  : Factor w/ 142 levels "Afghanistan",..: 1 1 1 1 1 1 1 1 1 1 ...
+    ##  $ continent: Factor w/ 4 levels "Africa","Americas",..: 3 3 3 3 3 3 3 3 3 3 ...
+    ##  $ year     : int  1952 1957 1962 1967 1972 1977 1982 1987 1992 1997 ...
+    ##  $ lifeExp  : num  28.8 30.3 32 34 36.1 ...
+    ##  $ pop      : int  8425333 9240934 10267083 11537966 13079460 14880372 12881816 13867957 16317921 22227415 ...
+    ##  $ gdpPercap: num  779 821 853 836 740 ...
+
+Notice, we see 142 countries (like in the original gapminder data frame) and not 140 as we saw when we used droplevels(). This illustrates the difference between fct\_drop() and droplevels().
+
+Even so, are Australia and New Zealand even used? They shouldn't be, but let's check this.
+
+``` r
+gap_no_Oceania_fct %>% 
+  filter(country %in% c("Australia", "New Zealand")) # filters to Australia and New Zealand rows
+```
+
+    ## # A tibble: 0 x 6
+    ## # ... with 6 variables: country <fct>, continent <fct>, year <int>,
+    ## #   lifeExp <dbl>, pop <int>, gdpPercap <dbl>
+
+We see that the countries Australia and New Zealand were not used, but they were not removed as in the case with droplevels(). So, we can reason that the droplevels() function is more useful than fct\_drop() in this case.
 
 Reorder the levels of countries in the forcats package
 ------------------------------------------------------
@@ -350,7 +334,7 @@ ggplot(gap_europe_2007, aes(lifeExp, country)) +
   ggtitle("Life exp. of the European countries in 2007") # add title
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-18-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-24-1.png)
 
 We can see the life expectancies are unordered. The above scatterplot looks rather chaotic and difficult to interpret.
 
@@ -366,7 +350,7 @@ gap_europe_2007 %>%
   ggtitle("Mean life exp. of European countries in 2007 (in ascending order)") # add title
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-19-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-25-1.png)
 
 The resulting scatterplot is much more organized and easy to interpret. For example, we can easily spot that Iceland has the highest mean life expetancy in 2007 of the European countries, which is just under 82 years old. In conclusion, we should probably all move to Iceland if we want to live long lives (just kidding).
 
@@ -382,7 +366,7 @@ gap_europe_2007 %>%
   ggtitle("Mean life exp. of European countries in 2007 (in decreasing order)") # add title
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-20-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-26-1.png)
 
 The same information is conveyed as in the above scatterplot for the ascending order of the mean life expectancy of the European countries in 2007. So, we can still see that Iceland has the highest mean life expectancy at just under 82 years old and Turkey has the lowest mean life expectancy at just under 72 years old (for 2007). I should not that for this data, it probably makes more sense for the first scatterplot (in ascending order) for easy readability of the mean life expectancies of the European countries in 2007.
 
@@ -414,7 +398,7 @@ gap_select %>%
   ggtitle("Life expectancy over time for the top five European countries in 2007") # add title
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-22-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-28-1.png)
 
 Now, we will use `fct_reorder2(f, x, y)` to reorder factor `f`, which for our example would be country. The function looks at max year (x) value and takes corresponding life expectancy (y) value. It will reorder the countries according to the life expectancy at the very end.
 
@@ -427,7 +411,7 @@ ggplot(aes(year, lifeExp)) +
   ggtitle("Life expectancy over time for the top five European countries in 2007") # add title
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-23-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-29-1.png)
 
 Notice that when we used `fct_reorder2()`, Iceland went first, then Switzerland, then Spain. This order corresponds to the order that we saw in the scatterplot of gap\_europe\_2007, which makes sense because we are reordering the five countries by their last life expectancy (which would be in 2007). That is a quick check to make sure that our code and output was what we expected.
 
@@ -473,7 +457,7 @@ gap_select_2007_ascend %>%
   ggtitle("Life expectancy vs. country for the top five European countries in 2007") # add title
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-26-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-32-1.png)
 
 So, the output is not what we want. We wanted the order to be France, Sweden, Spain, Switzerland and then Iceland to be in order of ascending life expectancy.
 
@@ -488,7 +472,7 @@ gap_select_2007_ascend_arr %>% # use the arrange function to display the countri
   ggtitle("Life expectancy vs. country for the top five European countries in 2007") # add title
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-27-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-33-1.png)
 
 Perfect. That scatterplot is exactly what we wanted. The European countries are now arranged according in ascending order of life expectancy in 2007.
 
@@ -581,7 +565,7 @@ lifeExp.bycontyr <- gapminder %>%
 lifeExp.bycontyr # let's see the animation!
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-31-1.gif)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-37-1.gif)
 
 One of the problems that I encountered with this animation was that it ran at a decent speed on my RStudio, but when I pushed it to Github, the animation ran at a snail's pace. I was bummed to learn that there wasn't an quick and easy fix to this becaue the transition\_reveal() is still being worked on. So, I left it at that.
 
@@ -608,7 +592,7 @@ ggplot(aes(pop, gdpPercap, size = meangdp, colour = country)) +
   ease_aes('linear')
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-32-1.gif)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-38-1.gif)
 
 This side-by-side animated plot gives us a feel for how the population vs GDP per capita changed over time for Americas and Europe. It is more general than precise. It allows us to see general patterns, and then we could construct more specific plots for the patterns that we wish to examine.
 
@@ -682,7 +666,7 @@ ggplot(aes(x = continent, y = lifeExp, fill = continent)) +
   ggtitle("Life expectancy by each continent for the gapminder data")
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-35-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-41-1.png)
 
 ``` r
 ggsave("lifeExp-continent-violin-plot.png", scale = 1.75) # save the plot using ggsave() 
@@ -751,7 +735,7 @@ y <- c(2,2,2,3,3) # define y vector
 plot(x, y) # simple plot of x versus y 
 ```
 
-![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-38-1.png)
+![](STAT545-HW05-factors-and-figures_files/figure-markdown_github/unnamed-chunk-44-1.png)
 
 When we have a figure up on our screen like that, we can quickly write it as a pdf by doing the following:
 
